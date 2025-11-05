@@ -1,0 +1,42 @@
+{% extends 'catalog/base.html' %}
+{% load static %}
+
+{% block title %}Главная — SkyStore{% endblock %}
+
+{% block page_title %}Skystore{% endblock %}
+
+{% block page_description %}
+<p class="lead">Skystore — это отличный вариант хранения ваших плагинов и примеров кода</p>
+{% endblock %}
+
+{% block content %}
+<!-- Блок с последними продуктами -->
+<h2 class="text-center mb-4">Последние товары</h2>
+<div class="row">
+    {% for product in latest_products %}
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            {% if product.image %}
+            <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}" style="height: 200px; object-fit: cover;">
+            {% else %}
+            <img src="{% static 'catalog/images/placeholder.jpg' %}" class="card-img-top" alt="Нет изображения" style="height: 200px; object-fit: cover;">
+            {% endif %}
+            <div class="card-body">
+                <h5 class="card-title">{{ product.name }}</h5>
+                <p class="card-text">{{ product.description|truncatechars:100 }}</p>
+                <p class="card-text"><strong>Цена: {{ product.price }} руб.</strong></p>
+                <p class="card-text"><small class="text-muted">Категория: {{ product.category.name }}</small></p>
+                <a href="{% url 'product_detail' product.pk %}" class="btn btn-primary">Подробнее</a>
+            </div>
+            <div class="card-footer">
+                <small class="text-muted">Добавлен: {{ product.created_at|date:"d.m.Y" }}</small>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <p class="text-center">Товары пока не добавлены</p>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

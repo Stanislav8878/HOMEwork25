@@ -1,0 +1,35 @@
+{% load static %}
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}SkyStore{% endblock %}</title>
+
+    <!-- Подключаем локальный Bootstrap CSS -->
+    <link rel="stylesheet" href="{% static 'catalog/css/bootstrap.min.css' %}">
+    <!-- Твои стили -->
+    <link rel="stylesheet" href="{% static 'catalog/css/styles.css' %}">
+</head>
+<body>
+
+    <!-- Включаем меню -->
+    {% include 'catalog/includes/menu.html' %}
+
+    <!-- Основной контент -->
+    <div class="container">
+        {% block content %}
+        {% endblock %}
+    </div>
+
+    <!-- Подвал -->
+    <footer class="pt-4 my-md-5 pt-md-5 border-top text-center">
+        <p class="text-muted">&copy; 2025 SkyStore</p>
+    </footer>
+
+    <!-- Подключаем локальный Bootstrap JS -->
+    <script src="{% static 'catalog/js/bootstrap.bundle.min.js' %}"></script>
+    <!-- Твой JS -->
+    <script src="{% static 'catalog/js/script.js' %}"></script>
+</body>
+</html>
