@@ -1,0 +1,11 @@
+{% extends 'catalog/base.html' %}
+{% block title %}Удалить статью{% endblock %}
+{% block page_title %}Удалить статью{% endblock %}
+{% block content %}
+<form method="post" class="card card-body">
+  {% csrf_token %}
+  <p>Удалить «{{ object.title }}»?</p>
+  <button class="btn btn-danger" type="submit">Удалить</button>
+  <a class="btn btn-link" href="{{ object.get_absolute_url }}">Отмена</a>
+</form>
+{% endblock %}
