@@ -1,0 +1,5 @@
+.card form input,
+.card form select,
+.card form textarea {
+    width: 100%;
+}
