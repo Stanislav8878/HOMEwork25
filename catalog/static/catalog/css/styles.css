@@ -1,4 +1,5 @@
-/* Дополнительные стили SkyStore */
-body {
-    background-color: #f8f9fa;
+.card form input,
+.card form select,
+.card form textarea {
+    width: 100%;
 }

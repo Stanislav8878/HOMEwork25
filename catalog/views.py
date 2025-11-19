@@ -1,3 +1,4 @@
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
 from django.views.generic import (
     TemplateView,
@@ -13,19 +14,21 @@ from .models import Product, Contact
 
 
 class HomeView(ListView):
+    """
+    Общедоступный список товаров.
+    """
     model = Product
     template_name = 'catalog/home.html'
-    context_object_name = 'latest_products'
-
-    def get_queryset(self):
-        # последние 5 созданных продуктов
-        return Product.objects.order_by('-created_at')[:5]
+    context_object_name = 'products'
 
 
-class ProductDetailView(DetailView):
+
+class ProductDetailView(LoginRequiredMixin, DetailView):
+    """
+    Просмотр одного товара — только для авторизованных.
+    """
     model = Product
     template_name = 'catalog/product_detail.html'
-    context_object_name = 'product'
 
 
 class ContactsView(TemplateView):
@@ -37,14 +40,10 @@ class ContactsView(TemplateView):
         return ctx
 
 
-class ProductCreateView(CreateView):
-    model = Product
-    form_class = ProductForm
-    template_name = 'catalog/product_form.html'
-    success_url = reverse_lazy('catalog:home')
-
-
-class ProductUpdateView(UpdateView):
+class ProductCreateView(LoginRequiredMixin, CreateView):
+    """
+    Создание товара — только для авторизованных.
+    """
     model = Product
     form_class = ProductForm
     template_name = 'catalog/product_form.html'
@@ -53,7 +52,22 @@ class ProductUpdateView(UpdateView):
         return reverse_lazy('catalog:product_detail', kwargs={'pk': self.object.pk})
 
 
-class ProductDeleteView(DeleteView):
+
+class ProductUpdateView(LoginRequiredMixin, UpdateView):
+    """
+    Редактирование товара — только для авторизованных.
+    """
+    model = Product
+    form_class = ProductForm
+    template_name = 'catalog/product_form.html'
+
+    def get_success_url(self):
+        return reverse_lazy('catalog:product_detail', kwargs={'pk': self.object.pk})
+
+class ProductDeleteView(LoginRequiredMixin, DeleteView):
+    """
+    Удаление товара — только для авторизованных.
+    """
     model = Product
     template_name = 'catalog/product_confirm_delete.html'
     success_url = reverse_lazy('catalog:home')
