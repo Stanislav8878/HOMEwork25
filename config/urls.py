@@ -23,6 +23,9 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('admin/', admin.site.urls),
 
+    # пользователи
+    path('users/', include(('users.urls', 'users'), namespace='users')),
+
     # каталог на /catalog/
     path('catalog/', include(('catalog.urls', 'catalog'), namespace='catalog')),
 

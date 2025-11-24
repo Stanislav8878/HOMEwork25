@@ -1,3 +1,4 @@
+# catalog/forms.py
 from django import forms
 
 from .models import Product, Category
@@ -15,8 +16,12 @@ FORBIDDEN_WORDS = (
     'радар',
 )
 
-MAX_IMAGE_SIZE_MB = 5
-ALLOWED_IMAGE_CONTENT_TYPES = ('image/jpeg', 'image/png')
+ALLOWED_IMAGE_CONTENT_TYPES = (
+    'image/jpeg',
+    'image/png',
+)
+
+MAX_IMAGE_SIZE_MB = 2
 
 
 class ProductForm(forms.ModelForm):
@@ -24,46 +29,44 @@ class ProductForm(forms.ModelForm):
         model = Product
         fields = ['name', 'description', 'image', 'category', 'price', 'is_published']
         widgets = {
-            'description': forms.Textarea(attrs={'rows': 4}),
+            'name': forms.TextInput(attrs={'class': 'form-control'}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
+            'category': forms.Select(attrs={'class': 'form-select'}),
+            'price': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'is_published': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
 
-    def __init__(self, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
-        # Проставляем Bootstrap-классы для всех полей формы
-        for name, field in self.fields.items():
-            widget = field.widget
-            existing_classes = widget.attrs.get('class', '')
-            if isinstance(widget, forms.CheckboxInput):
-                # Булевые поля — отдельный класс
-                classes = f"{existing_classes} form-check-input".strip()
-            else:
-                classes = f"{existing_classes} form-control".strip()
-            widget.attrs['class'] = classes
-
-    def _validate_forbidden_words(self, value: str, field_label: str) -> str:
-        if not value:
-            return value
-        lowered = value.lower()
+    def clean_name(self):
+        name = self.cleaned_data.get('name', '')
+        lowered = name.lower()
         for word in FORBIDDEN_WORDS:
             if word in lowered:
                 raise forms.ValidationError(
-                    f'Слово "{word}" запрещено для использования в поле "{field_label}".'
+                    f'Слово «{word}» запрещено в названии товара.'
                 )
-        return value
+        return name
 
-    def clean_name(self) -> str:
-        name = self.cleaned_data.get('name', '')
-        return self._validate_forbidden_words(name, 'Название')
+    def clean_description(self):
+        description = self.cleaned_data.get('description', '') or ''
+        lowered = description.lower()
+        for word in FORBIDDEN_WORDS:
+            if word in lowered:
+                raise forms.ValidationError(
+                    f'Слово «{word}» запрещено в описании товара.'
+                )
+        return description
 
-    def clean_description(self) -> str:
-        description = self.cleaned_data.get('description', '')
-        return self._validate_forbidden_words(description, 'Описание')
+    def clean(self):
+        cleaned_data = super().clean()
+        name = cleaned_data.get('name') or ''
+        description = cleaned_data.get('description') or ''
 
-    def clean_price(self):
-        price = self.cleaned_data.get('price')
-        if price is not None and price < 0:
-            raise forms.ValidationError('Цена продукта не может быть отрицательной.')
-        return price
+        if name and description and name.strip() == description.strip():
+            raise forms.ValidationError(
+                'Название и описание товара не должны совпадать.'
+            )
+
+        return cleaned_data
 
     def clean_image(self):
         image = self.cleaned_data.get('image')
