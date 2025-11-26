@@ -1,0 +1,33 @@
+{% extends 'mailings/base_mailings.html' %}
+
+
+{% block title %}Удалить сообщение{% endblock %}
+{% block page_title %}Удаление сообщения{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-7 col-lg-6">
+        <div class="card border-danger">
+            <div class="card-body">
+                <h2 class="h4 mb-3 text-danger">Удалить сообщение?</h2>
+                <p>
+                    Вы действительно хотите удалить сообщение
+                    <strong>«{{ object.subject }}»</strong>? Это действие нельзя отменить.
+                </p>
+
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'mailings:message_list' %}" class="btn btn-outline-secondary">
+                            Отмена
+                        </a>
+                        <button type="submit" class="btn btn-danger">
+                            Удалить
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

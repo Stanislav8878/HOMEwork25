@@ -3,6 +3,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
+from mailings.models import Mailing, Client
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from django.views.generic import (
@@ -19,9 +20,10 @@ from .models import Product, Contact, Category
 from .services import get_products_by_category
 
 
+@method_decorator(cache_page(60 * 5), name='dispatch')  # кешируем главную на 5 минут
 class HomeView(ListView):
     """
-    Главная — список последних опубликованных продуктов.
+    Главная — список последних опубликованных продуктов + статистика рассылок.
     """
     model = Product
     template_name = 'catalog/home.html'
@@ -33,6 +35,15 @@ class HomeView(ListView):
             .select_related('category', 'owner')
             .order_by('-created_at')
         )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['mailings_total'] = Mailing.objects.count()
+        context['mailings_active'] = Mailing.objects.filter(
+            status=Mailing.STATUS_RUNNING
+        ).count()
+        context['unique_clients'] = Client.objects.count()
+        return context
 
 
 class ContactsView(TemplateView):

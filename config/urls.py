@@ -14,11 +14,11 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+from django.conf import settings
+from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include
 from django.views.generic import RedirectView
-from django.conf import settings
-from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -26,14 +26,17 @@ urlpatterns = [
     # пользователи
     path('users/', include(('users.urls', 'users'), namespace='users')),
 
-    # каталог на /catalog/
+    # каталог
     path('catalog/', include(('catalog.urls', 'catalog'), namespace='catalog')),
 
-    # блог на /blogs/
+    # блог
     path('blogs/', include(('blogs.urls', 'blogs'), namespace='blogs')),
 
-    # главная -> блог, и ОБЯЗАТЕЛЬНО имя 'home'
-    path('', RedirectView.as_view(pattern_name='blogs:post_list', permanent=False), name='home'),
+    # рассылки
+    path('mailings/', include(('mailings.urls', 'mailings'), namespace='mailings')),
+
+    # главная -> каталог (чтобы там была статистика рассылок)
+    path('', RedirectView.as_view(pattern_name='catalog:home', permanent=False), name='home'),
 ]
 
 if settings.DEBUG:
