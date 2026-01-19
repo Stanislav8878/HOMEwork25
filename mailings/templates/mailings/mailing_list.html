@@ -1,0 +1,55 @@
+{% extends 'mailings/base_mailings.html' %}
+
+{% block title %}Рассылки{% endblock %}
+{% block page_title %}Рассылки{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0">Рассылки</h2>
+    <a class="btn btn-success" href="{% url 'mailings:mailing_create' %}">Создать рассылку</a>
+</div>
+
+<table class="table table-striped align-middle">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Период</th>
+            <th>Статус</th>
+            <th>Сообщение</th>
+            <th>Получателей</th>
+            <th>Владелец</th>
+            <th class="text-end">Действия</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for m in mailings %}
+            <tr>
+                <td>{{ m.id }}</td>
+                <td>
+                    {{ m.start_at|date:"d.m.Y H:i" }} —
+                    {{ m.end_at|date:"d.m.Y H:i" }}
+                </td>
+                <td>{{ m.get_status_display }}</td>
+                <td>{{ m.message.subject }}</td>
+                <td>{{ m.clients.count }}</td>
+                <td>{{ m.owner.email }}</td>
+                <td class="text-end">
+                    <a class="btn btn-sm btn-outline-secondary"
+                       href="{% url 'mailings:mailing_detail' m.pk %}">Подробнее</a>
+
+                    {% if m.owner == user or perms.mailings.disable_mailings %}
+                        <a class="btn btn-sm btn-outline-primary"
+                           href="{% url 'mailings:mailing_update' m.pk %}">Изменить</a>
+                        <a class="btn btn-sm btn-outline-danger"
+                           href="{% url 'mailings:mailing_delete' m.pk %}">Удалить</a>
+                    {% endif %}
+                </td>
+            </tr>
+        {% empty %}
+            <tr>
+                <td colspan="7" class="text-center text-muted">Рассылок пока нет</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

@@ -1,3 +1,5 @@
+# catalog/models.py
+from django.conf import settings
 from django.db import models
 from django.urls import reverse
 
@@ -17,15 +19,33 @@ class Category(models.Model):
 class Product(models.Model):
     name = models.CharField('Наименование', max_length=200)
     description = models.TextField('Описание', blank=True, null=True)
-    image = models.ImageField('Изображение', upload_to='products/', blank=True, null=True)
+    image = models.ImageField(
+        'Изображение',
+        upload_to='products/',
+        blank=True,
+        null=True,
+    )
     category = models.ForeignKey(
         Category,
         verbose_name='Категория',
-        on_delete=models.CASCADE,
         related_name='products',
+        on_delete=models.CASCADE,
     )
     price = models.DecimalField('Цена', max_digits=10, decimal_places=2)
-    is_published = models.BooleanField('Опубликовано', default=True)
+
+    # Статус публикации — по умолчанию НЕ опубликован
+    is_published = models.BooleanField('Опубликовано', default=False)
+
+    # Владелец продукта
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        verbose_name='Владелец',
+        related_name='products',
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True,  # оставляем nullable, чтобы не падали фикстуры и старая команда load_products
+    )
+
     created_at = models.DateTimeField('Создано', auto_now_add=True)
     updated_at = models.DateTimeField('Обновлено', auto_now=True)
 
@@ -33,11 +53,15 @@ class Product(models.Model):
         verbose_name = 'Продукт'
         verbose_name_plural = 'Продукты'
         ordering = ['-created_at']
+        # Кастомное право для модераторов продуктов
+        permissions = [
+            ('can_unpublish_product', 'Can unpublish product'),
+        ]
 
     def __str__(self) -> str:
         return self.name
 
-    def get_absolute_url(self) -> str:
+    def get_absolute_url(self):
         return reverse('catalog:product_detail', args=[self.pk])
 
 

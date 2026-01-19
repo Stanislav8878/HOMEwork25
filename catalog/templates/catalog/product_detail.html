@@ -2,9 +2,7 @@
 {% load static %}
 
 {% block title %}{{ product.name }} — SkyStore{% endblock %}
-
 {% block page_title %}{{ product.name }}{% endblock %}
-
 {% block page_description %}{% endblock %}
 
 {% block content %}
@@ -13,25 +11,44 @@
         {% if product.image %}
             <img src="{{ product.image.url }}" class="img-fluid rounded" alt="{{ product.name }}">
         {% else %}
-            <img src="{% static 'catalog/images/placeholder.jpg' %}" class="img-fluid rounded" alt="Нет изображения">
+            <img src="{% static 'catalog/images/placeholder.jpg' %}"
+                 class="img-fluid rounded" alt="Нет изображения">
         {% endif %}
     </div>
-    <div class="col-md-6">
-        <div class="card h-100">
-            <div class="card-body">
-                <h3 class="card-title mb-3">{{ product.name }}</h3>
-                <p class="card-text">{{ product.description|default:'Описание отсутствует' }}</p>
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="mb-0">{{ product.name }}</h3>
             </div>
             <ul class="list-group list-group-flush">
                 <li class="list-group-item">
                     <strong>Категория:</strong> {{ product.category.name }}
                 </li>
                 <li class="list-group-item">
-                    <strong>Цена:</strong> {{ product.price }} руб.
+                    <strong>Цена:</strong> {{ product.price }} ₽
                 </li>
                 <li class="list-group-item">
-                    <strong>Опубликован:</strong> {{ product.is_published|yesno:"Да,Нет" }}
+                    <strong>Владелец:</strong>
+                    {% if product.owner %}
+                        {{ product.owner }}
+                    {% else %}
+                        <span class="text-muted">не указан</span>
+                    {% endif %}
                 </li>
+                <li class="list-group-item">
+                    <strong>Статус:</strong>
+                    {% if product.is_published %}
+                        <span class="badge text-bg-success">Опубликован</span>
+                    {% else %}
+                        <span class="badge text-bg-secondary">Черновик</span>
+                    {% endif %}
+                </li>
+                {% if product.description %}
+                <li class="list-group-item">
+                    <strong>Описание:</strong><br>
+                    {{ product.description|linebreaks }}
+                </li>
+                {% endif %}
                 <li class="list-group-item">
                     <strong>Дата создания:</strong> {{ product.created_at|date:"d.m.Y H:i" }}
                 </li>
@@ -41,8 +58,31 @@
             </ul>
             <div class="card-body d-flex flex-wrap gap-2">
                 <a href="{% url 'catalog:home' %}" class="btn btn-secondary">Назад к каталогу</a>
-                <a href="{% url 'catalog:update_product' product.pk %}" class="btn btn-warning">Редактировать</a>
-                <a href="{% url 'catalog:delete_product' product.pk %}" class="btn btn-danger">Удалить</a>
+
+                {# Редактировать — только владелец #}
+                {% if user.is_authenticated and user == product.owner %}
+                    <a href="{% url 'catalog:update_product' product.pk %}"
+                       class="btn btn-warning">Редактировать</a>
+                {% endif %}
+
+                {# Удалить — владелец или модератор продуктов #}
+                {% if user.is_authenticated and (user == product.owner or perms.catalog.delete_product) %}
+                    <a href="{% url 'catalog:delete_product' product.pk %}"
+                       class="btn btn-danger">Удалить</a>
+                {% endif %}
+
+                {# Снять с публикации — владелец или модератор с правом can_unpublish_product #}
+                {% if user.is_authenticated and product.is_published and
+                      (user == product.owner or perms.catalog.can_unpublish_product) %}
+                    <form method="post"
+                          action="{% url 'catalog:unpublish_product' product.pk %}"
+                          class="d-inline">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-outline-secondary">
+                            Снять с публикации
+                        </button>
+                    </form>
+                {% endif %}
             </div>
         </div>
     </div>
