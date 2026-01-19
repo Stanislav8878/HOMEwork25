@@ -1,7 +1,7 @@
 # catalog/forms.py
 from django import forms
 
-from .models import Product, Category
+from .models import Product
 
 
 FORBIDDEN_WORDS = (

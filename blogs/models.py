@@ -1,6 +1,7 @@
 from django.db import models
 from django.urls import reverse
 
+
 class Post(models.Model):
     title = models.CharField('Заголовок', max_length=200)
     slug = models.SlugField('Слаг', max_length=220, unique=True)
